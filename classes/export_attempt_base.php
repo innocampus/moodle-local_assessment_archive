@@ -44,13 +44,13 @@ abstract class export_attempt_base {
     /** @var string[] list of errors during the export */
     private $errorlog = [];
 
-    /** @var array already saved moodle files in archive (file content hash => true) */
+    /** @var array already saved moodle files in archive (file content hash => path within archive) */
     private $storedfiles = [];
 
     /** @var array already saved javascript files in archive (file path => path within archive) */
     private $jsfiles = [];
 
-    /** @var array already saved images in archive (file path within archive => true) */
+    /** @var array already saved images in archive (component/image => path within archive) */
     private $images = [];
 
     /**
@@ -98,13 +98,17 @@ abstract class export_attempt_base {
      */
     public function add_stored_file(\stored_file $file) {
         $hash = $file->get_contenthash();
-        $path = 'files/' . $hash; // TODO store with file ending?
 
         if (isset($this->storedfiles[$hash])) {
-            return $path;
+            return $this->storedfiles[$hash];
         }
 
-        $this->storedfiles[$hash] = true;
+        $path = 'files/' . $hash;
+        $ext = pathinfo($file->get_filename(), PATHINFO_EXTENSION);
+        if ($ext) {
+            $path .= ".$ext";
+        }
+        $this->storedfiles[$hash] = $path;
 
         try {
             $file->archive_file($this->zipfile, $path);
@@ -278,7 +282,7 @@ abstract class export_attempt_base {
         // Replace baseURL for RequireJS.
         $oldbase = preg_quote($CFG->httpswwwroot .'/lib/requirejs.php/');
         $oldbaseregex = '@' . $oldbase . '[0-9-]*@';
-	$text = preg_replace($oldbaseregex, 'js', $text);
+        $text = preg_replace($oldbaseregex, 'js', $text);
         if (!is_string($text)) {
             throw new \moodle_exception('preg_replace_javascript_error', 'local_assessment_export');
         }
@@ -341,18 +345,20 @@ abstract class export_attempt_base {
             $regex,
             function ($matches) use ($CFG, $PAGE) {
                 list($themename, $component, $rev, $image) = explode('/', $matches[1], 4);
-                $archivepath = 'images/' . $component . '/' . $image;
-                if (isset($this->images[$archivepath])) {
-                    return $archivepath;
+                $uniquename = 'images/' . $component . '/' . $image;
+                if (isset($this->images[$uniquename])) {
+                    return $this->images[$uniquename];
                 }
 
                 $imagefile = $PAGE->theme->resolve_image_location($image, $component, true);
+                $ext = pathinfo($imagefile, PATHINFO_EXTENSION);
+                $archivepath = "images/$uniquename.$ext";
                 if (empty($imagefile) or !is_readable($imagefile)) {
                     $this->add_error(get_string('image_not_found', 'local_assessment_export', $matches[0]));
                     return $matches[0];
                 }
 
-                $this->images[$archivepath] = true;
+                $this->images[$uniquename] = $archivepath;
                 $this->zipfile->add_file_from_pathname($archivepath, $imagefile);
                 return $archivepath;
             },
