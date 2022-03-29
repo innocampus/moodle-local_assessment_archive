@@ -26,5 +26,16 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Export and archive e-assessments';
 
 // Settings.
+$string['methods_archive'] = 'Archive activities with these assessment methods';
+$string['methods_archive_desc'] = 'Assessment methods that indicate that the activity is part of an exam and must be archived.';
+$string['methods_dont_archive'] = 'Do not archive activities with these assessment methods';
+$string['methods_dont_archive_desc'] = 'Assessment methods that indicate that the activity does not need to be archived.';
+$string['info'] = 'Info text';
+$string['info_desc'] = 'Information that is displayed on the archiving information page. You may want to describe how archiving is done at your organisation.';
+$string['wait_after_attempt'] = 'Waiting time after an attempt was submitted';
+$string['wait_after_attempt_desc'] = 'Waiting time until the activity is (automatically) archived again after an attempt was submitted. A higher value avoids too many archives.';
 $string['wait_after_grading'] = 'Waiting time after grading';
-$string['wait_after_grading_desc'] = 'Waiting time until an attempt is (automatically) exported again after grading. A higher value avoids too many exports.';
+$string['wait_after_grading_desc'] = 'Waiting time until the activity is (automatically) archived again after grading. A higher value avoids too many archives.';
+
+$string['form_assessment_archiving'] = 'Archiving';
+$string['form_assessment_archiving_after'] = 'This activity is part of an exam and must be archived.';

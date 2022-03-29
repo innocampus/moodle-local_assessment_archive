@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/assessment_export/db" VERSION="2022030900" COMMENT="XMLDB file for Moodle local/assessment_export"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+    <TABLES>
+        <TABLE NAME="local_assessment_export" COMMENT="which module should be archived">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" UNSIGNED="true" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="cmid" TYPE="int" UNSIGNED="true" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="archive" TYPE="int" UNSIGNED="true" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="cmid" TYPE="foreign" FIELDS="id" REFTABLE="course_modules" REFFIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="cm_unique" UNIQUE="true" FIELDS="cmid"/>
+            </INDEXES>
+        </TABLE>
+    </TABLES>
+</XMLDB>

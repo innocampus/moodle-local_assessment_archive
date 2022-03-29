@@ -15,8 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 if ($hassiteconfig) {
-    $settings = new admin_settingpage('local_assessment_export', 'Your Settings Page Title'); // TODO
+    $settings = new admin_settingpage('local_assessment_export', get_string('pluginname', 'local_assessment_export'));
+
+    /** @var admin_category $ADMIN */
     $ADMIN->add('localplugins', $settings);
+
+    $settings->add(new admin_setting_configduration(
+        'local_assessment_export/wait_after_attempt',
+        get_string('wait_after_attempt', 'local_assessment_export'),
+        get_string('wait_after_attempt_desc', 'local_assessment_export'),
+        43200 // 12 hours
+    ));
 
     $settings->add(new admin_setting_configduration(
         'local_assessment_export/wait_after_grading',
@@ -24,5 +33,35 @@ if ($hassiteconfig) {
         get_string('wait_after_grading_desc', 'local_assessment_export'),
         604800 // 7 days
     ));
+
+    $settings->add(new admin_setting_confightmleditor(
+        'local_assessment_export/info',
+        get_string('info', 'local_assessment_export'),
+        get_string('info_desc', 'local_assessment_export'),
+        ''
+    ));
+
+
+    // Add more settings if local_assessment_methods is installed.
+    if (class_exists('\local_assessment_methods\helper')) {
+        $methods = [];
+        foreach (\local_assessment_methods\helper::get_methods() as $methodid => $value) {
+            $methods[$methodid] = $methodid;
+        }
+
+        $settings->add(new admin_setting_configmultiselect(
+            'local_assessment_export/methods_archive',
+            get_string('methods_archive', 'local_assessment_export'),
+            get_string('methods_archive_desc', 'local_assessment_export'),
+            [], $methods
+        ));
+
+        $settings->add(new admin_setting_configmultiselect(
+            'local_assessment_export/methods_dont_archive',
+            get_string('methods_dont_archive', 'local_assessment_export'),
+            get_string('methods_dont_archive_desc', 'local_assessment_export'),
+            [], $methods
+        ));
+    }
 
 }
