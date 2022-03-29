@@ -28,13 +28,3 @@ $string['pluginname'] = 'Export and archive e-assessments';
 // Settings.
 $string['wait_after_grading'] = 'Waiting time after grading';
 $string['wait_after_grading_desc'] = 'Waiting time until an attempt is (automatically) exported again after grading. A higher value avoids too many exports.';
-
-// Exceptions and errors.
-$string['file_error'] = 'Could not add file {$a->file} with hash {$a->hash} to archive: {$a->message}';
-$string['image_not_found'] = 'Could not add image {$a} to archive.';
-$string['js_not_found'] = 'Could not add javascript file {$a} to archive.';
-$string['preg_replace_files_error'] = 'Error in preg_replace_callback during replacing the files.';
-$string['preg_replace_images_error'] = 'Error in preg_replace_callback during replacing images.';
-$string['preg_replace_javascript_error'] = 'Error in preg_replace_callback during replacing the javascript files.';
-$string['unsupported_file_area'] = 'Cannot replace url {$a} as the file area is not supported by local_assessment_export.';
-$string['zip_create_error'] = 'Error while creating the zip file containing the attempt.';
