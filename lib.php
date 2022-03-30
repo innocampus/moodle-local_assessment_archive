@@ -10,7 +10,7 @@ defined('MOODLE_INTERNAL') || die;
  * @throws coding_exception
  * @throws dml_exception
  */
-function local_assessment_export_coursemodule_standard_elements($formwrapper, $mform)  {
+function local_assessment_archive_coursemodule_standard_elements($formwrapper, $mform)  {
     global $DB;
     $wrapper = $formwrapper->get_current();
     if (!in_array($wrapper->modulename, ["quiz", "assign"])) {
@@ -19,19 +19,19 @@ function local_assessment_export_coursemodule_standard_elements($formwrapper, $m
 
     $enabled = false;
     if (!empty($wrapper->coursemodule)
-            && ($record = $DB->get_record('local_assessment_export', ['cmid' => $wrapper->coursemodule]))) {
+            && ($record = $DB->get_record('local_assessment_archive', ['cmid' => $wrapper->coursemodule]))) {
         $enabled = $record->archive;
     }
 
     $checkbox = $mform->createElement('advcheckbox', 'local_assessment_archiving_enabled',
-        get_string('form_assessment_archiving', 'local_assessment_export'),
-        get_string('form_assessment_archiving_after', 'local_assessment_export'));
+        get_string('form_assessment_archiving', 'local_assessment_archive'),
+        get_string('form_assessment_archiving_after', 'local_assessment_archive'));
     $mform->insertElementBefore($checkbox, 'introeditor');
     $mform->setDefault('local_assessment_archiving_enabled', $enabled);
 
     // If local_assessment_methods is installed, the selected method may indicate whether to archive or not.
     if (class_exists('\local_assessment_methods\helper')) {
-        $config = get_config('local_assessment_export');
+        $config = get_config('local_assessment_archive');
         // Add empty string in order to also hide on the 'please select' option.
         $hideifmethods = array_merge([''], explode(',', $config->methods_archive), explode(',', $config->methods_dont_archive));
         $mform->hideIf('local_assessment_archiving_enabled', 'assessment_method', 'in', $hideifmethods);
@@ -45,12 +45,12 @@ function local_assessment_export_coursemodule_standard_elements($formwrapper, $m
  * @param $course
  * @throws dml_exception
  */
-function local_assessment_export_coursemodule_edit_post_actions($data, $course) {
+function local_assessment_archive_coursemodule_edit_post_actions($data, $course) {
     global $DB;
 
     $archivingenabled = $data->local_assessment_archiving_enabled ?? false;
     if (class_exists('\local_assessment_methods\helper') && isset($data->assessment_method)) {
-        $config = get_config('local_assessment_export');
+        $config = get_config('local_assessment_archive');
         // Setting methods_archive precedes methods_dont_archive.
         if (in_array($data->assessment_method, explode(',', $config->methods_archive))) {
             $archivingenabled = true;
@@ -60,14 +60,14 @@ function local_assessment_export_coursemodule_edit_post_actions($data, $course) 
     }
 
     if ($archivingenabled) {
-        if ($record = $DB->get_record('local_assessment_export', ['cmid' => $data->coursemodule])) {
+        if ($record = $DB->get_record('local_assessment_archive', ['cmid' => $data->coursemodule])) {
             $record->archive = 1;
-            $DB->update_record('local_assessment_export', $record);
+            $DB->update_record('local_assessment_archive', $record);
         } else {
-            $DB->insert_record('local_assessment_export', ['cmid' => $data->coursemodule, 'archive' => 1]);
+            $DB->insert_record('local_assessment_archive', ['cmid' => $data->coursemodule, 'archive' => 1]);
         }
     } else {
-        $DB->delete_records('local_assessment_export', ['cmid' => $data->coursemodule]);
+        $DB->delete_records('local_assessment_archive', ['cmid' => $data->coursemodule]);
     }
 
     return $data;

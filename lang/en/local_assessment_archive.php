@@ -17,13 +17,13 @@
 /**
  * Strings for plugin.
  *
- * @package    local_assessment_export
+ * @package    local_assessment_archive
  * @copyright  2022 Martin Gauk, innoCampus, TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Export and archive e-assessments';
+$string['pluginname'] = 'Archive e-assessments';
 
 // Settings.
 $string['methods_archive'] = 'Archive activities with these assessment methods';

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/assessment_export/db" VERSION="2022030900" COMMENT="XMLDB file for Moodle local/assessment_export"
+<XMLDB PATH="local/assessment_archive/db" VERSION="2022030900" COMMENT="XMLDB file for Moodle local/assessment_archive"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
     <TABLES>
-        <TABLE NAME="local_assessment_export" COMMENT="which module should be archived">
+        <TABLE NAME="local_assessment_archive" COMMENT="which module should be archived">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" UNSIGNED="true" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="cmid" TYPE="int" UNSIGNED="true" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
