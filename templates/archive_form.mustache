@@ -1,0 +1,150 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+<div class="local_assessment_archive_form">
+    <p class="local_assessment_archive_menu">
+        <div class="local_assessment_archive_selection">
+            {{#str}}mycourses{{/str}}: {{{course_selection_html}}}
+        </div>
+    </p>
+
+    {{#info}}
+    <p class="local_assessment_archive_info">
+        {{{info}}}
+    </p>
+    {{/info}}
+
+    {{#activities_exist}}
+
+        <form action="{{{action_url}}}" method="post" id="{{uniqid}}_archive_form" class="mform">
+            <input name="sesskey" type="hidden" value="{{{sesskey}}}" />
+            <table class="local_assessment_archive_table generaltable">
+                <thead>
+                    <tr>
+                        <th class="header c0" scope="col">
+                            {{#str}}activity{{/str}}
+                        </th>
+                        <th class="header c1" scope="col">
+                            {{#str}}moduletype, local_assessment_archive{{/str}}
+                        </th>
+                        {{#method_plugin_exists}}
+                        <th class="header c2" scope="col">
+                            {{#str}}assessment_method, local_assessment_methods{{/str}}
+                        </th>
+                        {{/method_plugin_exists}}
+                        <th class="header {{#method_plugin_exists}}c3{{/method_plugin_exists}}{{^method_plugin_exists}}c2{{/method_plugin_exists}} lastcol" scope="col">
+                            {{#str}}form_assessment_archiving, local_assessment_archive{{/str}}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                {{#activities}}
+                    <tr>
+                        <td class="cell c0">{{{link}}}</td>
+                        <td class="cell c1">{{module}}</td>
+                        {{#method_plugin_exists}}
+                        <td class="cell c2">
+                            {{#has_method_options}}
+                            <select name="method_{{cmid}}" class="custom-select" id="{{uniqid}}_id_method_{{cmid}}">
+                                {{#method_options}}
+                                    <option value="{{key}}" {{#selected}}selected="selected"{{/selected}}>{{value}}</option>
+                                {{/method_options}}
+                            </select>
+                            {{/has_method_options}}
+                            {{^has_method_options}}
+                            {{#str}}nomethodsavailable, local_assessment_archive{{/str}}
+                            {{/has_method_options}}
+                        </td>
+                        {{/method_plugin_exists}}
+                        <td class="cell {{#method_plugin_exists}}c3{{/method_plugin_exists}}{{^method_plugin_exists}}c2{{/method_plugin_exists}} lastcol">
+                            <span>
+                                <span class="js-archiving-control" data-dependenton="{{uniqid}}_id_method_{{cmid}}">
+                                    <span class="js-archiving-yes hidden">
+                                        <i class="icon fa fa-check text-success fa-fw" title="{{#str}}yes{{/str}}" role="img" aria-label="{{#str}}yes{{/str}}"></i>
+                                    </span>
+                                    <span class="js-archiving-no hidden">
+                                        <i class="icon fa fa-times text-danger fa-fw" title="{{#str}}no{{/str}}" role="img" aria-label="{{#str}}no{{/str}}"></i>
+                                    </span>
+                                    <input type="hidden" name="archiving_{{cmid}}" value="0">
+                                    <input name="archiving_{{cmid}}" type="checkbox" class="js-archiving-choose invisible"
+                                        {{#archive}}value="1" checked="checked"{{/archive}} id="{{uniqid}}_id_archiving_{{cmid}}">
+                                </span>
+                                <label for="{{uniqid}}_id_archiving_{{cmid}}">
+                                    {{#str}}form_assessment_archiving_after, local_assessment_archive{{/str}}
+                                </label>
+                            </span>
+                        </td>
+                    </tr>
+                {{/activities}}
+                </tbody>
+            </table>
+
+            <input class="btn btn-primary" type="submit" value="{{#str}}save{{/str}}"></input>
+            <a class="btn btn-secondary" href="{{cancel_url}}">{{#str}}cancel{{/str}}</a>
+        </form>
+
+    {{/activities_exist}}
+    {{^activities_exist}}
+        <b>{{#str}}nothingfound,local_assessment_archive{{/str}}</b>
+    {{/activities_exist}}
+
+    <style>
+        .js-archiving-control {
+            position: relative;
+        }
+        .js-archiving-yes, .js-archiving-no {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+        }
+    </style>
+</div>
+
+{{#method_plugin_exists}}
+{{#js}}
+const methodsArchive = {{#quote}}{{methods_archive}}{{/quote}}.split(',');
+const methodsDontArchive = {{#quote}}{{methods_dont_archive}}{{/quote}}.split(',');
+document.querySelectorAll('.js-archiving-control').forEach(group => {
+    const dependentOnEl = document.getElementById(group.dataset.dependenton);
+    const chooseEl = group.querySelector('.js-archiving-choose');
+    const yesEl = group.querySelector('.js-archiving-yes');
+    const noEl = group.querySelector('.js-archiving-no');
+    const update = () => {
+        if (dependentOnEl && methodsArchive.includes(dependentOnEl.value)) {
+            chooseEl.classList.add('invisible');
+            chooseEl.disabled = true;
+            yesEl.classList.remove('hidden');
+            noEl.classList.add('hidden');
+        } else if (dependentOnEl && (methodsDontArchive.includes(dependentOnEl.value) || !dependentOnEl.value)) {
+            chooseEl.classList.add('invisible');
+            chooseEl.disabled = true;
+            yesEl.classList.add('hidden');
+            noEl.classList.remove('hidden');
+        } else {
+            chooseEl.classList.remove('invisible');
+            chooseEl.disabled = false;
+            yesEl.classList.add('hidden');
+            noEl.classList.add('hidden');
+        }
+    };
+    update();
+    if (dependentOnEl) {
+        dependentOnEl.addEventListener('change', update);
+    }
+});
+{{/js}}
+{{/method_plugin_exists}}

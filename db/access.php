@@ -15,17 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for the local_assessment_archive plugin.
- *
- * @package   local_assessment_archive
- * @copyright 2022 Martin Gauk, innoCampus, TU Berlin
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    local_assessment_archive
+ * @copyright  2022 Lars Bonczek (@innoCampus, TU Berlin)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-/** @var stdClass $plugin */
-$plugin->component = 'local_assessment_archive';
-$plugin->version   = 2022040401;
-$plugin->requires  = 2020061504;
-$plugin->maturity  = MATURITY_ALPHA;
+$capabilities = array(
+    'local/assessment_archive:manage' => array(
+        'riskbitmask' => RISK_DATALOSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+    ),
+);
+
+

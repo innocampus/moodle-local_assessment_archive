@@ -46,29 +46,8 @@ function local_assessment_archive_coursemodule_standard_elements($formwrapper, $
  * @throws dml_exception
  */
 function local_assessment_archive_coursemodule_edit_post_actions($data, $course) {
-    global $DB;
-
     $archivingenabled = $data->local_assessment_archiving_enabled ?? false;
-    if (class_exists('\local_assessment_methods\helper') && isset($data->assessment_method)) {
-        $config = get_config('local_assessment_archive');
-        // Setting methods_archive precedes methods_dont_archive.
-        if (in_array($data->assessment_method, explode(',', $config->methods_archive))) {
-            $archivingenabled = true;
-        } else if (in_array($data->assessment_method, explode(',', $config->methods_dont_archive))) {
-            $archivingenabled = false;
-        }
-    }
-
-    if ($archivingenabled) {
-        if ($record = $DB->get_record('local_assessment_archive', ['cmid' => $data->coursemodule])) {
-            $record->archive = 1;
-            $DB->update_record('local_assessment_archive', $record);
-        } else {
-            $DB->insert_record('local_assessment_archive', ['cmid' => $data->coursemodule, 'archive' => 1]);
-        }
-    } else {
-        $DB->delete_records('local_assessment_archive', ['cmid' => $data->coursemodule]);
-    }
-
+    $method = $data->assessment_method ?? null;
+    \local_assessment_archive\helper::set_cm_archivingenabled($data->coursemodule, $archivingenabled, $method);
     return $data;
 }
