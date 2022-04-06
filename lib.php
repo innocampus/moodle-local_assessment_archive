@@ -1,6 +1,27 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die;
+/**
+ * API of local_assessment_archive.
+ *
+ * @package    local_assessment_archive
+ * @copyright  2022 Martin Gauk, innoCampus, TU Berlin
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Add setting to quiz/assignment settings form.
@@ -50,4 +71,21 @@ function local_assessment_archive_coursemodule_edit_post_actions($data, $course)
     $method = $data->assessment_method ?? null;
     \local_assessment_archive\helper::set_cm_archivingenabled($data->coursemodule, $archivingenabled, $method);
     return $data;
+}
+
+/**
+ * Add link to overview page.
+ *
+ * @param settings_navigation $nav
+ * @param $context
+ */
+function local_assessment_archive_extend_settings_navigation(settings_navigation $nav, $context) {
+    if ($context && ($context instanceof context_course)) {
+        if (has_capability('local/assessment_archive:manage', $context) && $course = $nav->get('courseadmin')) {
+            $url = new moodle_url('/local/assessment_archive/index.php',
+                array('courseid' => $context->get_course_context()->instanceid));
+            $course->add(get_string('linkname', 'local_assessment_archive'), $url, navigation_node::TYPE_CUSTOM,
+                null, null, new pix_icon('i/report', ''));
+        }
+    }
 }

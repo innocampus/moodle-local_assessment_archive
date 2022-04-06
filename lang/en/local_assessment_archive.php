@@ -40,6 +40,7 @@ $string['wait_after_grading_desc'] = 'Waiting time until the activity is (automa
 $string['form_assessment_archiving'] = 'Archiving';
 $string['form_assessment_archiving_after'] = 'This activity is part of an exam and must be archived.';
 
+$string['linkname'] = 'Archiving';
 $string['nothingfound'] = 'No suitable activities found.';
 $string['moduletype'] = 'Type';
 $string['nomethodsavailable'] = 'None available';
