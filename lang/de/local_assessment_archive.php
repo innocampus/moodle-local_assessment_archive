@@ -23,7 +23,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Archivierung von E-Prüfungen';
+$string['pluginname'] = 'Archivierung von E-Assessments';
 
 // Settings.
 $string['methods_archive'] = 'Archiviere Aktivitäten mit diesen Prüfungsformaten';
@@ -40,6 +40,7 @@ $string['wait_after_grading_desc'] = 'Wartezeit, nach der die Aktivität (automa
 $string['form_assessment_archiving'] = 'Archivierung';
 $string['form_assessment_archiving_after'] = 'Diese Aktivität ist prüfungsrelevant und muss archiviert werden.';
 
+$string['linkname'] = 'Archivierung';
 $string['nothingfound'] = 'Keine passenden Aktivitäten gefunden.';
 $string['moduletype'] = 'Typ';
 $string['nomethodsavailable'] = 'Keine verfügbar';
