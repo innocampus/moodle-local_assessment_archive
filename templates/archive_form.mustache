@@ -27,6 +27,7 @@
     </p>
     {{/info}}
 
+    <p>
     {{#activities_exist}}
 
         <form action="{{{action_url}}}" method="post" id="{{uniqid}}_archive_form" class="mform">
@@ -100,6 +101,7 @@
     {{^activities_exist}}
         <b>{{#str}}nothingfound,local_assessment_archive{{/str}}</b>
     {{/activities_exist}}
+    </p>
 
     <style>
         .js-archiving-control {

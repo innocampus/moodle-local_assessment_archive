@@ -45,15 +45,28 @@ class helper {
             $select_assessment_methods = ", lam.method";
             $join_assessment_methods = "LEFT JOIN {local_assessment_methods} lam ON lam.cmid = cm.id";
         }
-        return $DB->get_records_sql("
-            SELECT cm.id AS cmid, md.name AS modname, laa.archive$select_assessment_methods FROM {course_modules} cm
+        $results = $DB->get_records_sql("
+            SELECT cm.id AS cmid, md.name AS modname, cs.section, cs.sequence, laa.archive$select_assessment_methods FROM {course_modules} cm
             INNER JOIN {modules} md ON md.id = cm.module
+            INNER JOIN {course_sections} cs ON cm.section = cs.id
             LEFT JOIN {local_assessment_archive} laa ON laa.cmid = cm.id
             $join_assessment_methods
             WHERE cm.course = :courseid AND md.name IN ('quiz', 'assign')
         ", [
             'courseid' => $courseid
         ]);
+        // Sort modules by order in course.
+        usort($results, function ($a, $b) {
+            if ($a->section != $b->section)
+                return $a->section <=> $b->section;
+
+            // Sequence of modules inside a section is stored as a comma-separated list of cmids for some reason.
+            $seq = explode(',', $a->sequence);
+            $apos = array_search($a->cmid, $seq);
+            $bpos = array_search($b->cmid, $seq);
+            return $apos <=> $bpos;
+        });
+        return $results;
     }
 
     public static function reset_cm_archivingenabled($cmid) {
