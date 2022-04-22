@@ -35,9 +35,14 @@ defined('MOODLE_INTERNAL') || die();
 class helper {
 
     /**
+     * Returns a list of all quiz and assign activities in a course containing their ID, module name, archiving setting
+     * (and assessment method, if local_assessment_methods is installed).
+     *
+     * @param int $courseid
+     * @return array
      * @throws \dml_exception
      */
-    public static function get_course_modules($courseid): array {
+    public static function get_course_modules(int $courseid): array {
         global $DB;
         $select_assessment_methods = "";
         $join_assessment_methods = "";
@@ -69,31 +74,48 @@ class helper {
         return $results;
     }
 
-    public static function reset_cm_archivingenabled($cmid) {
+    /**
+     * Returns a list of all quiz and assign activities that should be archived according to their assessment method or
+     * archiving setting.
+     *
+     * @param bool $neverarchived Set to true to only return activities that have never been archived before.
+     * @return array
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function get_cmids_to_archive(bool $neverarchived = false): array {
         global $DB;
-        $DB->delete_records('local_assessment_archive', ['cmid' => $cmid]);
-    }
+        $join_assessment_methods = "";
+        if (class_exists('\local_assessment_methods\helper')) {
+            $join_assessment_methods = "LEFT JOIN {local_assessment_methods} lam ON lam.cmid = cm.id";
 
-    public static function set_cm_archivingenabled($cmid, $archivingenabled, $method = null) {
-        global $DB;
-        if (class_exists('\local_assessment_methods\helper') && $method) {
             $config = get_config('local_assessment_archive');
-            // Setting methods_archive precedes methods_dont_archive.
-            if (in_array($method, explode(',', $config->methods_archive))) {
-                $archivingenabled = true;
-            } else if (in_array($method, explode(',', $config->methods_dont_archive))) {
-                $archivingenabled = false;
-            }
-        }
-
-        if ($record = $DB->get_record('local_assessment_archive', ['cmid' => $cmid])) {
-            $record->archive = $archivingenabled;
-            $DB->update_record('local_assessment_archive', $record);
+            $methodsarchive = explode(',', $config->methods_archive);
+            $methodsdontarchive = explode(',', $config->methods_dont_archive);
+            list($inmethodsarchive, $inmethodsarchiveparams) = $DB->get_in_or_equal($methodsarchive);
+            list($inmethodsdontarchive, $inmethodsdontarchiveparams) = $DB->get_in_or_equal($methodsdontarchive);
+            $wherearchiving = "AND (lam.method $inmethodsarchive OR (laa.archive = 1 AND NOT (lam.method $inmethodsdontarchive)))";
+            $paramsarchiving = array_merge($inmethodsarchiveparams, $inmethodsdontarchiveparams);
         } else {
-            $DB->insert_record('local_assessment_archive', ['cmid' => $cmid, 'archive' => $archivingenabled]);
+            $wherearchiving = "AND laa.archive = 1";
+            $paramsarchiving = [];
         }
 
-        self::delete_cache($cmid);
+        $whereneverarchived = "";
+        if ($neverarchived) {
+            $whereneverarchived = "AND cm.id NOT IN (SELECT lah.cmid FROM {local_assessment_archivehist} lah)";
+        }
+
+        return $DB->get_fieldset_sql("
+            SELECT cm.id FROM {course_modules} cm
+            INNER JOIN {modules} md ON md.id = cm.module
+            INNER JOIN {course_sections} cs ON cm.section = cs.id
+            LEFT JOIN {local_assessment_archive} laa ON laa.cmid = cm.id
+            $join_assessment_methods
+            WHERE md.name IN ('quiz', 'assign')
+            $wherearchiving
+            $whereneverarchived
+        ", $paramsarchiving);
     }
 
     const ARCHIVING_DISABLED = 0;
@@ -105,6 +127,8 @@ class helper {
      * @param \context $context context of the activity
      * @param int $runtime run time of the ad-hoc task
      * @param int $reason why this activity is being exported (one of the export::REASON_* constonts)
+     * @throws \coding_exception
+     * @throws \dml_exception
      */
     public static function check_archiving_enabled_and_schedule_task(\context $context, int $runtime, int $reason) {
         if ($context instanceof \context_module) {
@@ -153,52 +177,96 @@ class helper {
      * @param int $cmid
      * @param int $runtime run time of the ad-hoc task
      * @param int $reason why this activity is being exported (one of the export::REASON_* constonts)
+     * @return bool
      */
-    public static function schedule_archiving(int $cmid, int $runtime, int $reason) {
+    public static function schedule_archiving(int $cmid, int $runtime, int $reason): bool {
         $task = new task\archive_task();
         $task->set_custom_data([
             'cmid' => (int) $cmid,
             'reason' => (int) $reason,
         ]);
         $task->set_next_run_time($runtime);
-        \core\task\manager::queue_adhoc_task($task, true);
+        return \core\task\manager::queue_adhoc_task($task, true);
+    }
+
+    /**
+     * Resets the stored archivingenabled value for an activity.
+     *
+     * @param int $cmid
+     * @throws \dml_exception
+     */
+    public static function reset_cm_archivingenabled(int $cmid) {
+        global $DB;
+        $DB->delete_records('local_assessment_archive', ['cmid' => $cmid]);
+    }
+
+    /**
+     * Set whether archiving is enabled for an activity. If the given assessment method overrides this setting, the db
+     * record is removed instead.
+     *
+     * @param int $cmid
+     * @param bool $archivingenabled
+     * @param string|null $method
+     * @throws \dml_exception
+     */
+    public static function set_cm_archivingenabled(int $cmid, bool $archivingenabled, ?string $method) {
+        global $DB;
+        if (class_exists('\local_assessment_methods\helper') && $method) {
+            $override = self::is_assessment_method_archiving_enabled($method);
+            if ($override !== null) {
+                // Reset archivingenabled if it's overridden by local_assessment_methods.
+                self::reset_cm_archivingenabled($cmid);
+                return;
+            }
+        }
+
+        if ($record = $DB->get_record('local_assessment_archive', ['cmid' => $cmid])) {
+            $record->archive = $archivingenabled;
+            $DB->update_record('local_assessment_archive', $record);
+        } else {
+            $DB->insert_record('local_assessment_archive', ['cmid' => $cmid, 'archive' => $archivingenabled]);
+        }
+
+        self::delete_cache($cmid);
     }
 
     /**
      * Returns whether archiving is enabled for an activity.
      *
-     * @param $cmid
+     * @param int $cmid
      * @return bool
+     * @throws \dml_exception
      */
-    public static function get_cm_archiving_enabled($cmid) : bool {
-        global $DB;
-
-        $enabled = $DB->get_field('local_assessment_archive', 'archive', ['cmid' => $cmid]);
-        if (!$enabled) {
-            $enabled = self::get_assessment_method_archiving_enabled($cmid);
-        }
-
-        return $enabled;
-    }
-
-    /**
-     * Fetch assessment method and check whether archiving is enabled for this method.
-     *
-     * @param $cmid
-     * @return bool
-     */
-    public static function get_assessment_method_archiving_enabled($cmid) : bool {
+    public static function get_cm_archiving_enabled(int $cmid) : bool {
         global $DB;
 
         if (class_exists('\local_assessment_methods\helper')) {
             $method = \local_assessment_methods\helper::get_cm_method($cmid);
             if ($method) {
-                $methodsarchive = get_config('local_assessment_archive', 'methods_archive');
-                if (in_array($method, explode(',', $methodsarchive))) {
-                    return true;
+                $enabled = self::is_assessment_method_archiving_enabled($method);
+                if ($enabled !== null) {
+                    return $enabled;
                 }
             }
         }
-        return false;
+        return $DB->get_field('local_assessment_archive', 'archive', ['cmid' => $cmid]);
+    }
+
+    /**
+     * Determine whether archiving is enabled for this method. Returns null if the user has to decide.
+     *
+     * @param string $method
+     * @return bool|null
+     * @throws \dml_exception
+     */
+    public static function is_assessment_method_archiving_enabled(string $method) : ?bool {
+        $config = get_config('local_assessment_archive');
+        // Setting methods_archive precedes methods_dont_archive.
+        if ($config->methods_archive && in_array($method, explode(',', $config->methods_archive))) {
+            return true;
+        } else if ($config->methods_dont_archive && in_array($method, explode(',', $config->methods_dont_archive))) {
+            return false;
+        }
+        return null;
     }
 }

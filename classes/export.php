@@ -213,7 +213,7 @@ class export {
         $data->users = [];
         $additionalfields = explode(',', get_config('local_assessment_archive', 'meta_data_custom_profile_fields'));
         $additionalfields = array_map('trim', $additionalfields);
-        //groups_get_all_groups() TODO
+        $dbgroups = groups_get_all_groups($this->course->id, 0, 0, 'g.*', true);
         $dbusers = get_enrolled_users($this->cminfo->context);
         foreach ($dbusers as $dbuser) {
             $user = new \stdClass();
@@ -234,6 +234,10 @@ class export {
                     $user->{$field->get_shortname()} = $field->data;
                 }
             }
+
+            $user->groups = array_column(array_filter($dbgroups, function($group) use ($dbuser) {
+                return array_key_exists($dbuser->id, $group->members);
+            }), 'name');
 
             $data->users[] = $user;
         }

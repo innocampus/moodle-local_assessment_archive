@@ -118,8 +118,8 @@
 
 {{#method_plugin_exists}}
 {{#js}}
-const methodsArchive = {{#quote}}{{methods_archive}}{{/quote}}.split(',');
-const methodsDontArchive = {{#quote}}{{methods_dont_archive}}{{/quote}}.split(',');
+const methodsArchive = {{#quote}}{{methods_archive}}{{/quote}}.split(',').filter(m=>m);
+const methodsDontArchive = {{#quote}}{{methods_dont_archive}}{{/quote}}.split(',').filter(m=>m);
 document.querySelectorAll('.js-archiving-control').forEach(group => {
     const dependentOnEl = document.getElementById(group.dataset.dependenton);
     const chooseEl = group.querySelector('.js-archiving-choose');
