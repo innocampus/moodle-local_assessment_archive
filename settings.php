@@ -20,19 +20,44 @@ if ($hassiteconfig) {
     /** @var admin_category $ADMIN */
     $ADMIN->add('localplugins', $settings);
 
-    $settings->add(new admin_setting_configduration(
+    $settings->add(new admin_setting_configdirectory(
+        'local_assessment_archive/directory',
+        get_string('directory', 'local_assessment_archive'),
+        get_string('directory_desc', 'local_assessment_archive'),
+        ''
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_assessment_archive/tsa_url',
+        get_string('time_stamp_server', 'local_assessment_archive'),
+        get_string('time_stamp_server_desc', 'local_assessment_archive'),
+        ''
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_assessment_archive/meta_data_custom_profile_fields',
+        get_string('meta_data_custom_profile_fields', 'local_assessment_archive'),
+        get_string('meta_data_custom_profile_fields_desc', 'local_assessment_archive'),
+        ''
+    ));
+
+    $waitafterattempt = new admin_setting_configduration(
         'local_assessment_archive/wait_after_attempt',
         get_string('wait_after_attempt', 'local_assessment_archive'),
         get_string('wait_after_attempt_desc', 'local_assessment_archive'),
         43200 // 12 hours
-    ));
+    );
+    $waitafterattempt->set_enabled_flag_options(admin_setting_flag::ENABLED, true);
+    $settings->add($waitafterattempt);
 
-    $settings->add(new admin_setting_configduration(
+    $waitaftergrading = new admin_setting_configduration(
         'local_assessment_archive/wait_after_grading',
         get_string('wait_after_grading', 'local_assessment_archive'),
         get_string('wait_after_grading_desc', 'local_assessment_archive'),
         604800 // 7 days
-    ));
+    );
+    $waitaftergrading->set_enabled_flag_options(admin_setting_flag::ENABLED, true);
+    $settings->add($waitaftergrading);
 
     $settings->add(new admin_setting_confightmleditor(
         'local_assessment_archive/info',

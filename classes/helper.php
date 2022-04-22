@@ -92,5 +92,113 @@ class helper {
         } else {
             $DB->insert_record('local_assessment_archive', ['cmid' => $cmid, 'archive' => $archivingenabled]);
         }
+
+        self::delete_cache($cmid);
+    }
+
+    const ARCHIVING_DISABLED = 0;
+    const ARCHIVING_SCHEDULED = 2;
+
+    /**
+     * Check if archiving is enabled and schedule an archive task.
+     *
+     * @param \context $context context of the activity
+     * @param int $runtime run time of the ad-hoc task
+     * @param int $reason why this activity is being exported (one of the export::REASON_* constonts)
+     */
+    public static function check_archiving_enabled_and_schedule_task(\context $context, int $runtime, int $reason) {
+        if ($context instanceof \context_module) {
+            $cmid = $context->instanceid;
+            $cache = \cache::make('local_assessment_archive', 'archiving_scheduled');
+            $cachekey = "{$cmid}_{$reason}";
+            $archivingstatus = $cache->get($cachekey);
+            if ($archivingstatus === false) {
+                // No cache entry.
+                $enabled = self::get_cm_archiving_enabled($cmid);
+                $cache->set($cachekey, ($enabled) ? self::ARCHIVING_SCHEDULED : self::ARCHIVING_DISABLED);
+            } else {
+                // When there is a cache entry, archiving is either disabled or already scheduled.
+                // The cache entry will be deleted by the archive task.
+                return;
+            }
+
+            self::schedule_archiving($cmid, $runtime, $reason);
+        }
+    }
+
+    /**
+     * Delete cache entries belonging to a cmid.
+     *
+     * @param int $cmid
+     * @param int|null $reason
+     */
+    public static function delete_cache(int $cmid, ?int $reason = null) {
+        $cache = \cache::make('local_assessment_archive', 'archiving_scheduled');
+
+        if ($reason) {
+            $cache->delete("{$cmid}_{$reason}");
+        } else {
+            $keys = array_map(function($r) use ($cmid) {
+                return "{$cmid}_{$r}";
+            }, export::ALL_REASONS);
+            $cache->delete_many($keys);
+        }
+    }
+
+    /**
+     * Schedule an archiving task.
+     *
+     * This function will not schedule another task if there is already one for a cmid with the same reason.
+     *
+     * @param int $cmid
+     * @param int $runtime run time of the ad-hoc task
+     * @param int $reason why this activity is being exported (one of the export::REASON_* constonts)
+     */
+    public static function schedule_archiving(int $cmid, int $runtime, int $reason) {
+        $task = new task\archive_task();
+        $task->set_custom_data([
+            'cmid' => (int) $cmid,
+            'reason' => (int) $reason,
+        ]);
+        $task->set_next_run_time($runtime);
+        \core\task\manager::queue_adhoc_task($task, true);
+    }
+
+    /**
+     * Returns whether archiving is enabled for an activity.
+     *
+     * @param $cmid
+     * @return bool
+     */
+    public static function get_cm_archiving_enabled($cmid) : bool {
+        global $DB;
+
+        $enabled = $DB->get_field('local_assessment_archive', 'archive', ['cmid' => $cmid]);
+        if (!$enabled) {
+            $enabled = self::get_assessment_method_archiving_enabled($cmid);
+        }
+
+        return $enabled;
+    }
+
+    /**
+     * Fetch assessment method and check whether archiving is enabled for this method.
+     *
+     * @param $cmid
+     * @return bool
+     */
+    public static function get_assessment_method_archiving_enabled($cmid) : bool {
+        global $DB;
+
+        if (class_exists('\local_assessment_methods\helper')) {
+            $method = \local_assessment_methods\helper::get_cm_method($cmid);
+            if ($method) {
+                $methodsarchive = get_config('local_assessment_archive', 'methods_archive');
+                if (in_array($method, explode(',', $methodsarchive))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
