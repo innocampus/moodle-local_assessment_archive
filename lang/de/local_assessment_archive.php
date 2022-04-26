@@ -45,6 +45,8 @@ $string['wait_after_grading_desc'] = 'Wartezeit, nach der die Aktivität (automa
 
 $string['form_assessment_archiving'] = 'Archivierung';
 $string['form_assessment_archiving_after'] = 'Diese Aktivität ist prüfungsrelevant und muss archiviert werden.';
+$string['form_assessment_archiving_yes'] = 'Diese Aktivität ist prüfungsrelevant und wird archiviert.';
+$string['form_assessment_archiving_no'] = 'Diese Aktivität ist nicht prüfungsrelevant und wird nicht archiviert.';
 
 $string['cachedef_archiving_scheduled'] = 'Archivierung einer Aktivität ist geplant';
 $string['linkname'] = 'Archivierung';

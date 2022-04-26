@@ -45,6 +45,8 @@ $string['wait_after_grading_desc'] = 'Waiting time until the activity is (automa
 
 $string['form_assessment_archiving'] = 'Archiving';
 $string['form_assessment_archiving_after'] = 'This activity is part of an exam and must be archived.';
+$string['form_assessment_archiving_yes'] = 'This activity is part of an exam and will be archived.';
+$string['form_assessment_archiving_no'] = 'This activity is not part of an exam and will not be archived.';
 
 $string['cachedef_archiving_scheduled'] = 'Archiving of an activity is scheduled';
 $string['linkname'] = 'Archiving';

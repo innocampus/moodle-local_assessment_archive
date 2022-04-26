@@ -71,21 +71,31 @@
                         </td>
                         {{/method_plugin_exists}}
                         <td class="cell {{#method_plugin_exists}}c3{{/method_plugin_exists}}{{^method_plugin_exists}}c2{{/method_plugin_exists}} lastcol">
-                            <span>
-                                <span class="js-archiving-control" data-dependenton="{{uniqid}}_id_method_{{cmid}}">
+                            <span class="js-archiving-group" data-dependenton="{{uniqid}}_id_method_{{cmid}}">
+                                <span class="js-archiving-control">
                                     <span class="js-archiving-yes hidden">
                                         <i class="icon fa fa-check text-success fa-fw" title="{{#str}}yes{{/str}}" role="img" aria-label="{{#str}}yes{{/str}}"></i>
                                     </span>
                                     <span class="js-archiving-no hidden">
                                         <i class="icon fa fa-times text-danger fa-fw" title="{{#str}}no{{/str}}" role="img" aria-label="{{#str}}no{{/str}}"></i>
                                     </span>
-                                    <input type="hidden" name="archiving_{{cmid}}" value="0">
-                                    <input name="archiving_{{cmid}}" type="checkbox" class="js-archiving-choose invisible"
+                                    <span class="js-archiving-choose {{#method_plugin_exists}}invisible{{/method_plugin_exists}}">
+                                        <input type="hidden" name="archiving_{{cmid}}" value="0">
+                                        <input name="archiving_{{cmid}}" type="checkbox"
                                         {{#archive}}value="1" checked="checked"{{/archive}} id="{{uniqid}}_id_archiving_{{cmid}}">
+                                    </span>
                                 </span>
-                                <label for="{{uniqid}}_id_archiving_{{cmid}}">
-                                    {{#str}}form_assessment_archiving_after, local_assessment_archive{{/str}}
-                                </label>
+                                <span class="js-archiving-yes-label hidden">
+                                    {{#str}}form_assessment_archiving_yes, local_assessment_archive{{/str}}
+                                </span>
+                                <span class="js-archiving-no-label hidden">
+                                    {{#str}}form_assessment_archiving_no, local_assessment_archive{{/str}}
+                                </span>
+                                <span class="js-archiving-choose-label {{#method_plugin_exists}}hidden{{/method_plugin_exists}}">
+                                    <label for="{{uniqid}}_id_archiving_{{cmid}}">
+                                        {{#str}}form_assessment_archiving_after, local_assessment_archive{{/str}}
+                                    </label>
+                                </span>
                             </span>
                         </td>
                     </tr>
@@ -120,27 +130,39 @@
 {{#js}}
 const methodsArchive = {{#quote}}{{methods_archive}}{{/quote}}.split(',').filter(m=>m);
 const methodsDontArchive = {{#quote}}{{methods_dont_archive}}{{/quote}}.split(',').filter(m=>m);
-document.querySelectorAll('.js-archiving-control').forEach(group => {
+document.querySelectorAll('.js-archiving-group').forEach(group => {
     const dependentOnEl = document.getElementById(group.dataset.dependenton);
     const chooseEl = group.querySelector('.js-archiving-choose');
     const yesEl = group.querySelector('.js-archiving-yes');
     const noEl = group.querySelector('.js-archiving-no');
+    const chooseLabel = group.querySelector('.js-archiving-choose-label');
+    const yesLabel = group.querySelector('.js-archiving-yes-label');
+    const noLabel = group.querySelector('.js-archiving-no-label');
     const update = () => {
         if (dependentOnEl && methodsArchive.includes(dependentOnEl.value)) {
             chooseEl.classList.add('invisible');
             chooseEl.disabled = true;
+            chooseLabel.classList.add('hidden');
             yesEl.classList.remove('hidden');
+            yesLabel.classList.remove('hidden');
             noEl.classList.add('hidden');
+            noLabel.classList.add('hidden');
         } else if (dependentOnEl && (methodsDontArchive.includes(dependentOnEl.value) || !dependentOnEl.value)) {
             chooseEl.classList.add('invisible');
             chooseEl.disabled = true;
+            chooseLabel.classList.add('hidden');
             yesEl.classList.add('hidden');
+            yesLabel.classList.add('hidden');
             noEl.classList.remove('hidden');
+            noLabel.classList.remove('hidden');
         } else {
             chooseEl.classList.remove('invisible');
             chooseEl.disabled = false;
+            chooseLabel.classList.remove('hidden');
             yesEl.classList.add('hidden');
+            yesLabel.classList.add('hidden');
             noEl.classList.add('hidden');
+            noLabel.classList.add('hidden');
         }
     };
     update();
