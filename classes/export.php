@@ -106,7 +106,7 @@ class export {
      */
     public function archive(string $directory, ?string $tsaurl) {
         $time = time();
-        $fileprefix = $this->cminfo->id . '-' . $this->reason . '-' . date(DATE_W3C, $time);
+        $fileprefix = $this->cminfo->id . '-' . date(DATE_W3C, $time) . '-' . $this->reason;
 
         // The temp files should be under $directory in order to rename/move the files later atomically.
         $tmpprefix = $directory . '/.' . $fileprefix;
