@@ -216,6 +216,7 @@ class helper {
             if ($override !== null) {
                 // Reset archivingenabled if it's overridden by local_assessment_methods.
                 self::reset_cm_archivingenabled($cmid);
+                self::delete_cache($cmid);
                 return;
             }
         }
