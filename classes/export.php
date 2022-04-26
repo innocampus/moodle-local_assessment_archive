@@ -33,10 +33,8 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 /**
  * Export class.
  *
- * This class offers the following callbacks:
- *   local_assessment_archive_pre(\local_assessment_archive\export $export)
- *   local_assessment_archive_post(\local_assessment_archive\export $export, bool $success)
- *   local_assessment_archive_modify_metadata(\local_assessment_archive\export $export, \stdClass $metadata);
+ * This class offers the following callback:
+ *   local_assessment_archive_modify_metadata(\local_assessment_archive\export $export, \stdClass $metadata)
  *
  * @copyright  2022 Martin Gauk, innoCampus, TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -107,13 +105,6 @@ class export {
      * @param null|string $tsaurl URL to a time stamping authority
      */
     public function archive(string $directory, ?string $tsaurl) {
-        $callbacks = get_plugins_with_function('local_assessment_archive_pre');
-        foreach ($callbacks as $type => $plugins) {
-            foreach ($plugins as $plugin => $pluginfunction) {
-                $pluginfunction($this);
-            }
-        }
-
         $time = time();
         $fileprefix = $this->cminfo->id . '-' . $this->reason . '-' . date(DATE_W3C, $time);
 
@@ -151,14 +142,6 @@ class export {
                 !rename($tmpjsonfile, $finaljsonfile)) {
                 throw new \moodle_exception('rename_error', 'local_assessment_archive');
             }
-
-            $callbacks = get_plugins_with_function('local_assessment_archive_post');
-            foreach ($callbacks as $type => $plugins) {
-                foreach ($plugins as $plugin => $pluginfunction) {
-                    $pluginfunction($this, true);
-                }
-            }
-
         } catch (\Exception $e) {
             @unlink($tmpbackupfile);
             @unlink($tmpsigfile);
@@ -166,14 +149,6 @@ class export {
             @unlink($finalbackupfile);
             @unlink($finalsigfile);
             @unlink($finaljsonfile);
-
-            $callbacks = get_plugins_with_function('local_assessment_archive_post');
-            foreach ($callbacks as $type => $plugins) {
-                foreach ($plugins as $plugin => $pluginfunction) {
-                    $pluginfunction($this, false);
-                }
-            }
-
             throw $e;
         }
 
