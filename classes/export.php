@@ -33,6 +33,11 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 /**
  * Export class.
  *
+ * This class offers the following callbacks:
+ *   local_assessment_archive_pre(\local_assessment_archive\export $export)
+ *   local_assessment_archive_post(\local_assessment_archive\export $export, bool $success)
+ *   local_assessment_archive_modify_metadata(\local_assessment_archive\export $export, \stdClass $metadata);
+ *
  * @copyright  2022 Martin Gauk, innoCampus, TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -58,8 +63,8 @@ class export {
     /**
      * Constructor.
      *
-     * @param \stdClass $coursemodule
-     * @param string $file a new zip archive will be created at this path
+     * @param \stdClass $course
+     * @param \cm_info $cminfo course module
      * @param int $reason why this activity is being exported (one of the self::REASON_* constonts)
      */
     public function __construct(\stdClass $course, \cm_info $cminfo, int $reason) {
@@ -69,12 +74,46 @@ class export {
     }
 
     /**
+     * Get course data.
+     *
+     * @return \stdClass
+     */
+    public function get_course() : \stdClass {
+        return $this->course;
+    }
+
+    /**
+     * Get course module.
+     *
+     * @return \cm_info
+     */
+    public function get_course_module_info() : \cm_info {
+        return $this->cminfo;
+    }
+
+    /**
+     * Get reason why this activity is being archived.
+     *
+     * @return int
+     */
+    public function get_reason() : int {
+        return $this->reason;
+    }
+
+    /**
      * Archive an activity.
      *
      * @param string $directory base directory where to archive activities
      * @param null|string $tsaurl URL to a time stamping authority
      */
     public function archive(string $directory, ?string $tsaurl) {
+        $callbacks = get_plugins_with_function('local_assessment_archive_pre');
+        foreach ($callbacks as $type => $plugins) {
+            foreach ($plugins as $plugin => $pluginfunction) {
+                $pluginfunction($this);
+            }
+        }
+
         $time = time();
         $fileprefix = $this->cminfo->id . '-' . $this->reason . '-' . date(DATE_W3C, $time);
 
@@ -110,6 +149,14 @@ class export {
                 !rename($tmpjsonfile, $finaljsonfile)) {
                 throw new \moodle_exception('rename_error', 'local_assessment_archive');
             }
+
+            $callbacks = get_plugins_with_function('local_assessment_archive_post');
+            foreach ($callbacks as $type => $plugins) {
+                foreach ($plugins as $plugin => $pluginfunction) {
+                    $pluginfunction($this, true);
+                }
+            }
+
         } catch (\Exception $e) {
             @unlink($tmpbackupfile);
             @unlink($tmpsigfile);
@@ -117,6 +164,14 @@ class export {
             @unlink($finalbackupfile);
             @unlink($finalsigfile);
             @unlink($finaljsonfile);
+
+            $callbacks = get_plugins_with_function('local_assessment_archive_post');
+            foreach ($callbacks as $type => $plugins) {
+                foreach ($plugins as $plugin => $pluginfunction) {
+                    $pluginfunction($this, false);
+                }
+            }
+
             throw $e;
         }
 
@@ -240,6 +295,13 @@ class export {
             }), 'name');
 
             $data->users[] = $user;
+        }
+
+        $callbacks = get_plugins_with_function('local_assessment_archive_modify_metadata');
+        foreach ($callbacks as $type => $plugins) {
+            foreach ($plugins as $plugin => $pluginfunction) {
+                $pluginfunction($this, $data);
+            }
         }
 
         $json = json_encode($data, JSON_PRETTY_PRINT);
