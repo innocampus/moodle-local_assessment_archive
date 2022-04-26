@@ -191,7 +191,10 @@ class export {
             //'legacyfiles' => false,
         ];
         foreach ($settings as $name => $value) {
-            $controller->get_plan()->get_setting($name)->set_value($value);
+            $setting = $controller->get_plan()->get_setting($name);
+            if ($setting->get_status() == \base_setting::NOT_LOCKED) {
+                $setting->set_value($value);
+            }
         }
 
         $controller->execute_plan();
