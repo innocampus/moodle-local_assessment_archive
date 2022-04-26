@@ -124,8 +124,10 @@ class export {
         $tmpjsonfile = $tmpprefix . '.json';
 
         $finaldir = $directory . '/' . $this->course->id;
-        $finalbackupfile = $finaldir . "/{$fileprefix}.mbz";
-        $finalsigfile = $finaldir . "/{$fileprefix}.tsr";
+        $backupfile = $fileprefix . '.mbz';
+        $finalbackupfile = $finaldir . '/' . $backupfile;
+        $sigfile =  $fileprefix . '.tsr';
+        $finalsigfile = $finaldir . '/' . $sigfile;
         $finaljsonfile = $finaldir . "/{$fileprefix}.json";
 
         if (!is_dir($finaldir)) {
@@ -136,7 +138,7 @@ class export {
 
         try {
             $this->backup_activity($tmpbackupfile);
-            $this->save_metadata($tmpjsonfile, $time);
+            $this->save_metadata($tmpjsonfile, $time, $backupfile, $sigfile);
 
             if ($tsaurl) {
                 $this->sign_file($tmpbackupfile, $tmpsigfile, $tsaurl);
@@ -236,8 +238,10 @@ class export {
      *
      * @param string $filepath where to store metadata
      * @param int $time
+     * @param string $backupfile
+     * @param string $sigfile
      */
-    protected function save_metadata(string $filepath, int $time) {
+    protected function save_metadata(string $filepath, int $time, string $backupfile, string $sigfile) {
         $data = new \stdClass();
 
         // General information.
@@ -245,6 +249,8 @@ class export {
         $data->date_timestamp = $time;
         $data->site_short_name = get_config('core', 'shortname');
         $data->archive_reason = self::reason_to_string($this->reason);
+        $data->backup_file = $backupfile;
+        $data->signature_file = $sigfile;
 
         // Course information.
         $data->course = new \stdClass();
