@@ -179,16 +179,16 @@ class export {
             'blocks' => true,
             'filters' => true,
             'comments' => true,
-            //'badges' => false,
-            //'calendarevents' => false,
+            'badges' => false,
+            'calendarevents' => false,
             'userscompletion' => true,
             'logs' => true,
             'grade_histories' => true,
-            'questionbank' => true,
+            'questionbank' => $this->cminfo->modname == 'quiz',
             'groups' => true,
             'competencies' => true,
-            'contentbankcontent' => true,
-            //'legacyfiles' => false,
+            'contentbankcontent' => false,
+            'legacyfiles' => false,
         ];
         foreach ($settings as $name => $value) {
             $setting = $controller->get_plan()->get_setting($name);
