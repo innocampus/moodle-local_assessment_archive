@@ -63,6 +63,7 @@ class archive_task extends \core\task\adhoc_task {
         $obj->reason = $data->reason;
         $DB->insert_record('local_assessment_archivehist', $obj);
 
-        mtrace("Archived course module {$data->cmid}.");
+        $reason = \local_assessment_archive\export::reason_to_string($data->reason);
+        mtrace("Archived course module {$data->cmid} in course {$course->id} (reason {$reason}).");
     }
 }
