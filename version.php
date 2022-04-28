@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /** @var stdClass $plugin */
 $plugin->component = 'local_assessment_archive';
-$plugin->version   = 2022040402;
+$plugin->version   = 2022042800;
 $plugin->requires  = 2020061504;
-$plugin->maturity  = MATURITY_ALPHA;
+$plugin->maturity  = MATURITY_RC;
