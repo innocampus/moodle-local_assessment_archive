@@ -27,6 +27,13 @@ if ($hassiteconfig) {
         ''
     ));
 
+    $settings->add(new admin_setting_configdirectory(
+        'local_assessment_archive/tempdir',
+        get_string('temp_directory', 'local_assessment_archive'),
+        get_string('temp_directory_desc', 'local_assessment_archive'),
+        ''
+    ));
+
     $settings->add(new admin_setting_configtext(
         'local_assessment_archive/tsa_url',
         get_string('time_stamp_server', 'local_assessment_archive'),

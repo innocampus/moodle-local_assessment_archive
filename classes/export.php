@@ -105,14 +105,20 @@ class export {
      * @param null|string $tsaurl URL to a time stamping authority
      */
     public function archive(string $directory, ?string $tsaurl) {
+        global $CFG;
+
         $time = time();
         $fileprefix = $this->cminfo->id . '_' . date('Y-m-d-Hi', $time) . '_' . $this->reason;
 
-        // The temp files should be under $directory in order to rename/move the files later atomically.
-        $tmpprefix = $directory . '/.' . $fileprefix;
-        $tmpbackupfile = $tmpprefix . '.mbz';
-        $tmpsigfile = $tmpprefix . '.tsr';
-        $tmpjsonfile = $tmpprefix . '.json';
+        // The temp files should be under the same mounted filesystem as $directory in order to rename/move the files later atomically.
+        $tempdir = get_config('local_assessment_archive', 'tempdir');
+        if (empty($tempdir) || !is_dir($tempdir) || !is_writable($tempdir)) {
+            throw new \moodle_exception('temp_dir_not_writable', 'local_assessment_archive');
+        }
+        $tmpprefix = $tempdir . '/' . $fileprefix;
+        $tmpbackupfile = $tmpprefix . '.mbz.tmp';
+        $tmpsigfile = $tmpprefix . '.tsr.tmp';
+        $tmpjsonfile = $tmpprefix . '.json.tmp';
 
         $finaldir = $directory . '/' . $this->course->id;
         $backupfile = $fileprefix . '.mbz';
@@ -122,9 +128,12 @@ class export {
         $finaljsonfile = $finaldir . "/{$fileprefix}.json";
 
         if (!is_dir($finaldir)) {
-            if (!mkdir($finaldir)) {
+            if (!mkdir($finaldir, $CFG->directorypermissions)) {
                 throw new \moodle_exception('mkdir_error', 'local_assessment_archive');
             }
+        }
+        if (!is_writable($finaldir)) {
+            throw new \moodle_exception('mkdir_error', 'local_assessment_archive');
         }
 
         try {
@@ -136,12 +145,16 @@ class export {
                 if (!rename($tmpsigfile, $finalsigfile)) {
                     throw new \moodle_exception('rename_error', 'local_assessment_archive');
                 }
+                chmod($finalsigfile, $CFG->filepermissions);
             }
 
             if (!rename($tmpbackupfile, $finalbackupfile) ||
                 !rename($tmpjsonfile, $finaljsonfile)) {
                 throw new \moodle_exception('rename_error', 'local_assessment_archive');
             }
+            chmod($finalbackupfile, $CFG->filepermissions);
+            chmod($finaljsonfile, $CFG->filepermissions);
+
         } catch (\Exception $e) {
             @unlink($tmpbackupfile);
             @unlink($tmpsigfile);
