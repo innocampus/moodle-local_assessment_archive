@@ -220,12 +220,14 @@ class export {
      * @param string $sigfile
      */
     protected function save_metadata(string $filepath, int $time, string $backupfile, string $sigfile) {
+        global $SITE;
+
         $data = new \stdClass();
 
         // General information.
         $data->date = date(DATE_W3C, $time);
         $data->date_timestamp = $time;
-        $data->site_short_name = get_config('core', 'shortname');
+        $data->site_short_name = $SITE->shortname;
         $data->archive_reason = self::reason_to_string($this->reason);
         $data->backup_file = $backupfile;
         $data->signature_file = $sigfile;
