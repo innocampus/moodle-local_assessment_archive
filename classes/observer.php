@@ -39,9 +39,9 @@ class observer {
      * @param \mod_assign\event\base $event
      */
     static public function assign_submission_created_updated(\mod_assign\event\base $event) {
-        $wait = get_config('local_assessment_archive', 'wait_after_attempt');
-        if ($wait) {
-            $time = time() + $wait;
+        $config = get_config('local_assessment_archive');
+        if ($config->wait_after_attempt_enabled) {
+            $time = time() + $config->wait_after_attempt;
             helper::check_archiving_enabled_and_schedule_task($event->get_context(), $time, export::REASON_ATTEMPT_SUBMITTED);
         }
     }
@@ -52,9 +52,9 @@ class observer {
      * @param \mod_assign\event\base $event
      */
     static public function assign_submission_graded(\mod_assign\event\base $event) {
-        $wait = get_config('local_assessment_archive', 'wait_after_grading');
-        if ($wait) {
-            $time = time() + $wait;
+        $config = get_config('local_assessment_archive');
+        if ($config->wait_after_grading_enabled) {
+            $time = time() + $config->wait_after_grading;
             helper::check_archiving_enabled_and_schedule_task($event->get_context(), $time, export::REASON_ATTEMPT_GRADED);
         }
     }
@@ -65,9 +65,9 @@ class observer {
      * @param \core\event\base $event
      */
     static public function quiz_attempt_submitted(\core\event\base $event) {
-        $wait = get_config('local_assessment_archive', 'wait_after_attempt');
-        if ($wait) {
-            $time = time() + $wait;
+        $config = get_config('local_assessment_archive');
+        if ($config->wait_after_attempt_enabled) {
+            $time = time() + $config->wait_after_attempt;
             helper::check_archiving_enabled_and_schedule_task($event->get_context(), $time, export::REASON_ATTEMPT_SUBMITTED);
         }
     }
@@ -78,9 +78,9 @@ class observer {
      * @param \core\event\base $event
      */
     static public function quiz_attempt_graded(\core\event\base $event) {
-        $wait = get_config('local_assessment_archive', 'wait_after_grading');
-        if ($wait) {
-            $time = time() + $wait;
+        $config = get_config('local_assessment_archive');
+        if ($config->wait_after_grading_enabled) {
+            $time = time() + $config->wait_after_grading;
             helper::check_archiving_enabled_and_schedule_task($event->get_context(), $time, export::REASON_ATTEMPT_GRADED);
         }
     }

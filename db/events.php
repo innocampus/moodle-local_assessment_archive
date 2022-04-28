@@ -45,7 +45,7 @@ $observers = [
     ],
     [
         'eventname' => '\mod_quiz\event\attempt_regraded',
-        'callback'  => '\local_assessment_archive\observer::quiz_attempt_submitted',
+        'callback'  => '\local_assessment_archive\observer::quiz_attempt_graded',
     ],
     [
         'eventname' => '\mod_quiz\event\attempt_submitted',
