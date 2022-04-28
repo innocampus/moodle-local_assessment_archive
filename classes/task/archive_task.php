@@ -51,6 +51,9 @@ class archive_task extends \core\task\adhoc_task {
         }
 
         $config = get_config('local_assessment_archive');
+        if (empty($config->directory)) {
+            throw new \moodle_exception('archive_directory_not_set', 'local_assessment_archive');
+        }
         $export = new \local_assessment_archive\export($course, $cminfo, $data->reason);
         $export->archive($config->directory, $config->tsa_url);
 
