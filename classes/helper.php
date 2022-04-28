@@ -139,7 +139,12 @@ class helper {
             if ($archivingstatus === false) {
                 // No cache entry.
                 $enabled = self::get_cm_archiving_enabled($cmid);
-                $cache->set($cachekey, ($enabled) ? self::ARCHIVING_SCHEDULED : self::ARCHIVING_DISABLED);
+                if ($enabled) {
+                    $cache->set($cachekey, self::ARCHIVING_SCHEDULED);
+                } else {
+                    $cache->set($cachekey, self::ARCHIVING_DISABLED);
+                    return;
+                }
             } else {
                 // When there is a cache entry, archiving is either disabled or already scheduled.
                 // The cache entry will be deleted by the archive task.
