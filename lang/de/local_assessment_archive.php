@@ -55,3 +55,5 @@ $string['linkname'] = 'Archivierung';
 $string['nothingfound'] = 'Keine passenden Aktivitäten gefunden.';
 $string['moduletype'] = 'Typ';
 $string['nomethodsavailable'] = 'Keine verfügbar';
+
+$string['assessment_archive:manage'] = 'Archivierung von E-Assessments managen.';
