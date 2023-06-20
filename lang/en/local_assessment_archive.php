@@ -55,3 +55,5 @@ $string['linkname'] = 'Archiving';
 $string['nothingfound'] = 'No suitable activities found.';
 $string['moduletype'] = 'Type';
 $string['nomethodsavailable'] = 'None available';
+
+$string['assessment_archive:manage'] = 'Managing the archiving of e-assessments.';
