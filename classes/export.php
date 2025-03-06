@@ -33,8 +33,7 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 /**
  * Export class.
  *
- * This class offers the following callback:
- *   local_assessment_archive_modify_metadata(\local_assessment_archive\export $export, \stdClass $metadata)
+ * This class dispatches the modify_metadata hook.
  *
  * @copyright  2022 Martin Gauk, innoCampus, TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -296,12 +295,8 @@ class export {
             $data->users[] = $user;
         }
 
-        $callbacks = get_plugins_with_function('local_assessment_archive_modify_metadata');
-        foreach ($callbacks as $type => $plugins) {
-            foreach ($plugins as $plugin => $pluginfunction) {
-                $pluginfunction($this, $data);
-            }
-        }
+        $hook = new hook\modify_metadata($this, $data);
+        \core\di::get(\core\hook\manager::class)->dispatch($hook);
 
         $json = json_encode($data, JSON_PRETTY_PRINT);
         file_put_contents($filepath, $json);
