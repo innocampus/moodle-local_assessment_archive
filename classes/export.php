@@ -183,12 +183,14 @@ class export {
             $user->id
         );
 
+        // The available settings are defined in \backup_root_task::define_settings.
         $settings = [
             'users' => true,
             'anonymize' => false,
             'role_assignments' => true,
             'activities' => true,
             'blocks' => true,
+            'files' => true,
             'filters' => true,
             'comments' => true,
             'badges' => false,
@@ -196,10 +198,11 @@ class export {
             'userscompletion' => true,
             'logs' => true,
             'grade_histories' => true,
-            'questionbank' => $this->cminfo->modname == 'quiz',
             'groups' => true,
             'competencies' => true,
+            'customfield' => true,
             'contentbankcontent' => false,
+            'xapistate' => true,
             'legacyfiles' => false,
         ];
         foreach ($settings as $name => $value) {
