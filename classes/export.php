@@ -24,6 +24,9 @@
 
 namespace local_assessment_archive;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
@@ -327,22 +330,33 @@ class export {
                 throw new \moodle_exception('openssl_error', 'local_assessment_archive');
             }
 
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $tsaurl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, file_get_contents($tmppath));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/timestamp-query'));
-            $response = curl_exec($ch);
-            $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            if ($status != 200 || strlen($response) < 100) {
+            $contents = file_get_contents($tmppath);
+            if ($contents === false) {
                 throw new \moodle_exception('tsa_signing_error', 'local_assessment_archive');
             }
 
-            file_put_contents($output, $response);
+            $client = new Client([
+                'timeout' => 20,
+                'http_errors' => false,
+            ]);
+
+            try {
+                $response = $client->post($tsaurl, [
+                    'headers' => ['Content-Type' => 'application/timestamp-query'],
+                    'body' => $contents,
+                ]);
+            } catch (GuzzleException) {
+                throw new \moodle_exception('tsa_signing_error', 'local_assessment_archive');
+            }
+
+            $status = $response->getStatusCode();
+            $responsebody = $response->getBody()->getContents();
+
+            if ($status != 200 || strlen($responsebody) < 100) {
+                throw new \moodle_exception('tsa_signing_error', 'local_assessment_archive');
+            }
+
+            file_put_contents($output, $responsebody);
         } finally {
             @unlink($tmppath);
         }
