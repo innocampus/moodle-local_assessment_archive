@@ -369,17 +369,12 @@ class export {
      * @return string
      */
     static public function reason_to_string(int $reason) : string {
-        switch ($reason) {
-            case self::REASON_ATTEMPT_SUBMITTED:
-                return 'attempt_submitted';
-            case self::REASON_ATTEMPT_GRADED:
-                return 'attempt_graded';
-            case self::REASON_ARCHIVING_INITIALLY_ENABLED:
-                return 'archiving_initially_enabled';
-            case self::REASON_ADMIN_SCRIPT:
-                return 'admin_script';
-            default:
-                return 'unknown';
-        }
+        return match ($reason) {
+            self::REASON_ATTEMPT_SUBMITTED => 'attempt_submitted',
+            self::REASON_ATTEMPT_GRADED => 'attempt_graded',
+            self::REASON_ARCHIVING_INITIALLY_ENABLED => 'archiving_initially_enabled',
+            self::REASON_ADMIN_SCRIPT => 'admin_script',
+            default => 'unknown',
+        };
     }
 }
