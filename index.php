@@ -71,7 +71,6 @@ if ($action == 'save') {
     }
 
     redirect($url);
-    return;
 }
 
 $modinfo = get_fast_modinfo($courseid);
