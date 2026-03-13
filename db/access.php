@@ -22,16 +22,16 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = array(
-    'local/assessment_archive:manage' => array(
+$capabilities = [
+    'local/assessment_archive:manage' => [
         'riskbitmask' => RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW
-        ),
-    ),
-);
+        ],
+    ],
+];
 
 
