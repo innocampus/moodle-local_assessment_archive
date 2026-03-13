@@ -92,8 +92,8 @@ class helper {
             $config = get_config('local_assessment_archive');
             $methodsarchive = explode(',', $config->methods_archive);
             $methodsdontarchive = explode(',', $config->methods_dont_archive);
-            list($inmethodsarchive, $inmethodsarchiveparams) = $DB->get_in_or_equal($methodsarchive);
-            list($inmethodsdontarchive, $inmethodsdontarchiveparams) = $DB->get_in_or_equal($methodsdontarchive);
+            [$inmethodsarchive, $inmethodsarchiveparams] = $DB->get_in_or_equal($methodsarchive);
+            [$inmethodsdontarchive, $inmethodsdontarchiveparams] = $DB->get_in_or_equal($methodsdontarchive);
             $wherearchiving = "AND (lam.method $inmethodsarchive OR (laa.archive = 1 AND NOT (lam.method $inmethodsdontarchive)))";
             $paramsarchiving = array_merge($inmethodsarchiveparams, $inmethodsdontarchiveparams);
         } else {

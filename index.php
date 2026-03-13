@@ -71,13 +71,12 @@ if ($action == 'save') {
     }
 
     redirect($url);
-    return;
 }
 
 $modinfo = get_fast_modinfo($courseid);
 $data = new \stdClass();
 
-$availcourses = array();
+$availcourses = [];
 foreach (enrol_get_my_courses() as $course) {
     $context = context_course::instance($course->id, IGNORE_MISSING);
     if (has_capability('local/assessment_archive:manage', $context)) {
@@ -105,11 +104,11 @@ foreach ($cms as $cmdata) {
     $row = new \stdClass();
     $row->cmid = $cmdata->cmid;
 
-    $url = new \moodle_url("/mod/{$cm->modname}/view.php", ['id' => $cm->id]);
-    $activitylink = \html_writer::empty_tag('img', array('src' => $cm->get_icon_url(),
-            'class' => 'iconlarge activityicon', 'alt' => '', 'role' => 'presentation', 'aria-hidden' => 'true')) . ' ' .
-        \html_writer::tag('span', $cm->get_formatted_name(), array('class' => 'instancename'));
-    $row->link = \html_writer::link($url, $activitylink, array('class' => 'aalink'));
+    $url = new \moodle_url("/mod/$cm->modname/view.php", ['id' => $cm->id]);
+    $activitylink = \html_writer::empty_tag('img', ['src' => $cm->get_icon_url(),
+            'class' => 'iconlarge activityicon', 'alt' => '', 'role' => 'presentation', 'aria-hidden' => 'true']) . ' ' .
+        \html_writer::tag('span', $cm->get_formatted_name(), ['class' => 'instancename']);
+    $row->link = \html_writer::link($url, $activitylink, ['class' => 'aalink']);
 
     $row->module = $cm->get_module_type_name();
 

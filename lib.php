@@ -83,7 +83,7 @@ function local_assessment_archive_extend_settings_navigation(settings_navigation
     if ($context && ($context instanceof context_course)) {
         if (has_capability('local/assessment_archive:manage', $context) && $course = $nav->get('courseadmin')) {
             $url = new moodle_url('/local/assessment_archive/index.php',
-                array('courseid' => $context->get_course_context()->instanceid));
+                ['courseid' => $context->get_course_context()->instanceid]);
             $course->add(get_string('linkname', 'local_assessment_archive'), $url, navigation_node::TYPE_CUSTOM,
                 null, null, new pix_icon('i/report', ''));
         }
